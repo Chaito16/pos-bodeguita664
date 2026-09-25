@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS La Bodeguita 664</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Librería para lector de códigos de barras (Cámara) -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Librería para generar códigos de barras en el Ticket -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+
+    <div class="max-w-md mx-auto p-4 min-h-screen flex flex-col justify-between">
+        
+        <!-- Encabezado con Logo y Roles -->
+        <header class="bg-slate-900 text-white p-4 rounded-2xl shadow-lg mb-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBaRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAIdpAAQAAAABAAARTgESAAMAAAABAAEAAIdpAAQAAAABAAARUgAAAAAAACwJAAABAAAAAsgAAAAB ... (Logo optimizado) ..." alt="Logo" class="w-10 h-10 rounded-full object-cover border border-amber-500">
+                    <div>
+                        <h1 class="text-sm font-bold tracking-wider">LA BODEGUITA 664</h1>
+                        <p class="text-[10px] text-amber-400" id="user-role-label">Rol: Cajero</p>
+                    </div>
+                </div>
+                <button onclick="toggleRole()" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-slate-700">
+                    Admin 🔐
+                </button>
+            </div>
+        </header>
+
+        <!-- Botones Principales -->
+        <main class="space-y-4 flex-1">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="openScanner('add')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
+                    📷 Registrar Prenda
+                </button>
+                <button onclick="openScanner('pos')" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
+                    🛒 Vender Ropa
+                </button>
+            </div>
+
+            <!-- Botón de Garantías / Búsqueda de Ticket -->
+            <button onclick="openScanner('warranty')" class="w-full bg-amber-600 hover:bg-amber-700 text-white p-2.5 rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2">
+                🔍 Revisar Garantía (Escanear Ticket)
+            </button>
+
+            <!-- Pestañas -->
+            <div class="bg-white p-4 rounded-2xl shadow">
+                <div class="flex border-b mb-3 text-xs font-semibold text-center">
+                    <button onclick="switchTab('inv')" id="tab-inv" class="flex-1 pb-2 border-b-2 border-indigo-600 text-indigo-600">Inventario Cloud</button>
+                    <button onclick="switchTab('sales')" id="tab-sales" class="flex-1 pb-2 text-gray-400">Historial Ventas</button>
+                </div>
+
+                <div id="view-inv" class="space-y-2 max-h-52 overflow-y-auto text-xs">
+                    <p class="text-gray-400 text-center py-4">Sincronizando inventario...</p>
+                </div>
+
+                <div id="view-sales" class="space-y-2 max-h-52 overflow-y-auto text-xs hidden">
+                    <p class="text-gray-400 text-center py-4">Cargando ventas...</p>
+                </div>
+            </div>
+            
+            <button onclick="loadData()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-xl text-xs font-bold">🔄 Sincronizar Datos</button>
+        </main>
+
+        <!-- Modal de Escáner -->
+        <div id="scanner-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex flex-col justify-end">
+            <div class="bg-white rounded-t-3xl p-5 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 id="scanner-title" class="font-bold text-slate-800 text-sm">Escanear Código</h3>
+                    <button onclick="closeScanner()" class="text-gray-500 font-bold px-3 py-1 bg-gray-100 rounded-full text-xs">✕</button>
+                </div>
+                <div id="reader" class="w-full rounded-xl overflow-hidden mb-4"></div>
+                
+                <div id="product-form" class="hidden space-y-3">
+                    <div class="bg-amber-50 p-2.5 rounded-xl text-xs text-amber-800 font-medium border border-amber-200">
+                        Código detectado: <span id="scanned-code" class="font-bold"></span>
+                    </div>
+                    <input type="text" id="p-name" placeholder="Descripción (ej. Blusa casual americana)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="p-gender" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                            <option value="Dama">Dama</option>
+                            <option value="Caballero">Caballero</option>
+                            <option value="Unisex">Unisex</option>
+                            <option value="Infantil">Infantil</option>
+                        </select>
+                        <select id="p-category" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                            <option value="Blusa">Blusa</option>
+                            <option value="Playera">Playera</option>
+                            <option value="Short">Short</option>
+                            <option value="Falda">Falda</option>
+                            <option value="Vestido">Vestido</option>
+                            <option value="Leggins">Leggins</option>
+                            <option value="Ropa Deportiva">Ropa Deportiva</option>
+                            <option value="Accesorio">Accesorio</option>
+                            <option value="Tenis">Tenis</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="p-size" placeholder="Talla (S,M,32)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                        <input type="number" id="p-price" placeholder="Precio ($)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                        <input type="number" id="p-stock" placeholder="Stock" value="1" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                    </div>
+
+                    <button onclick="saveProduct()" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-bold text-xs shadow">Guardar Producto</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Ticket Oculto para Impresión -->
+        <div id="ticket-modal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center space-y-3 font-mono text-xs">
+                <div class="flex justify-center mb-2">
+                    <img src="data:image/jpeg;base64,..." alt="Logo Ticket" class="w-16 h-16 rounded-full object-cover border-2 border-slate-800">
+                </div>
+                <h2 class="font-bold text-sm tracking-wider">LA BODEGUITA 664</h2>
+                <p class="text-[10px] text-gray-500">Moda Americana * Calidad * Estilo</p>
+                <hr class="border-dashed my-2">
+                <div id="ticket-details" class="text-left space-y-1 text-[11px]">
+                    <!-- Detalles de venta -->
+                </div>
+                <hr class="border-dashed my-2">
+                <p class="text-[9px] text-gray-600">Conserve este ticket para cualquier cambio o garantía dentro de los 30 días.</p>
+                <div class="my-3 flex flex-col items-center">
+                    <svg id="barcode-ticket"></svg>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="window.print()" class="flex-1 bg-slate-800 text-white py-2 rounded-xl font-bold text-xs">🖨️ Imprimir</button>
+                    <button onclick="closeTicketModal()" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-xl font-bold text-xs">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Resultado de Garantía -->
+        <div id="warranty-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white p-5 rounded-2xl max-w-xs w-full text-center space-y-3">
+                <h3 class="font-bold text-sm text-slate-800">Estado de Garantía</h3>
+                <div id="warranty-result" class="text-xs text-left bg-slate-50 p-3 rounded-xl border">
+                    <!-- Resultado -->
+                </div>
+                <button onclick="document.getElementById('warranty-modal').classList.add('hidden')" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs font-bold">Cerrar</button>
+            </div>
+        </div>
+
+        <footer class="text-center text-[10px] text-slate-400 mt-4">
+            La Bodeguita 664 - Sistema POS Móvil
+        </footer>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwAH6FKZ3FAMwM5ugI4G3RB1aBhZN0PR5O7B_IUr-yK7o5hKL4KjSElTinJ9IL1iI-D/exec";
+
+        let html5QrCode = null;
+        let currentMode = 'add';
+        let currentUser = { role: 'cajero' };
+        let inventory = [];
+        let sales = [];
+
+        async function loadData() {
+            try {
+                let resInv = await fetch(`${API_URL}?action=getInventory`);
+                inventory = await resInv.json();
+                updateInventoryUI();
+
+                let resSales = await fetch(`${API_URL}?action=getSales`);
+                sales = await resSales.json();
+                updateSalesUI();
+            } catch (e) {
+                console.error("Error sincronizando:", e);
+            }
+        }
+
+        function toggleRole() {
+            if (currentUser.role === 'cajero') {
+                let pass = prompt("Contraseña de Administrador:");
+                if (pass === "admin123") {
+                    currentUser.role = 'admin';
+                    document.getElementById('user-role-label').innerText = "Rol: Administrador 🛡️";
+                    alert("Modo Administrador activado.");
+                    updateSalesUI();
+                } else if (pass !== null) alert("Contraseña incorrecta.");
+            } else {
+                currentUser.role = 'cajero';
+                document.getElementById('user-role-label').innerText = "Rol: Cajero";
+                alert("Cambiado a Cajero.");
+                updateSalesUI();
+            }
+        }
+
+        function switchTab(tab) {
+            if (tab === 'inv') {
+                document.getElementById('view-inv').classList.remove('hidden');
+                document.getElementById('view-sales').classList.add('hidden');
+                document.getElementById('tab-inv').className = "flex-1 pb-2 border-b-2 border-indigo-600 text-indigo-600";
+                document.getElementById('tab-sales').className = "flex-1 pb-2 text-gray-400";
+            } else {
+                document.getElementById('view-inv').classList.add('hidden');
+                document.getElementById('view-sales').classList.remove('hidden');
+                document.getElementById('tab-sales').className = "flex-1 pb-2 border-b-2 border-indigo-600 text-indigo-600";
+                document.getElementById('tab-inv').className = "flex-1 pb-2 text-gray-400";
+            }
+        }
+
+        function openScanner(mode) {
+            currentMode = mode;
+            document.getElementById('scanner-modal').classList.remove('hidden');
+            document.getElementById('product-form').classList.add('hidden');
+            document.getElementById('scanner-title').innerText = mode === 'add' ? 'Escanear para Registrar' : mode === 'pos' ? 'Escanear para Vender' : 'Escanear Ticket de Garantía';
+
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                onScanSuccess,
+                (err) => {}
+            ).catch(err => alert("Error al iniciar cámara. Requiere HTTPS."));
+        }
+
+        function closeScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => document.getElementById('scanner-modal').classList.add('hidden')).catch(e => {});
+            } else {
+                document.getElementById('scanner-modal').classList.add('hidden');
+            }
+        }
+
+        async function onScanSuccess(decodedText) {
+            html5QrCode.stop().then(async () => {
+                if (currentMode === 'add') {
+                    document.getElementById('scanned-code').innerText = decodedText;
+                    document.getElementById('product-form').classList.remove('hidden');
+                    window.tempBarcode = decodedText;
+                } else if (currentMode === 'pos') {
+                    let product = inventory.find(p => p.code == decodedText);
+                    if (product) {
+                        if (product.stock > 0) {
+                            let res = await fetch(API_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: 'sellProduct', code: decodedText, productName: product.name, category: product.category, size: product.size, price: product.price })
+                            });
+                            let data = await res.json();
+                            if (data.status === 'success') {
+                                alert(`¡Venta Exitosa! Generando ticket...`);
+                                loadData();
+                                showTicket(product);
+                            } else {
+                                alert("Error al procesar venta.");
+                            }
+                        } else alert("¡Producto agotado!");
+                    } else alert(`El código ${decodedText} no existe en inventario.`);
+                    closeScanner();
+                } else if (currentMode === 'warranty') {
+                    // Modo revisión de garantía escaneando el código del ticket
+                    let sale = sales.find(s => s.id == decodedText);
+                    let resultDiv = document.getElementById('warranty-result');
+                    if (sale) {
+                        let saleDate = new Date(sale.date);
+                        let today = new Date();
+                        let diffDays = Math.floor((today - saleDate) / (1000 * 60 * 60 * 24));
+                        let valid = diffDays <= 30;
+
+                        resultDiv.innerHTML = `
+                            <p><b>Ticket ID:</b> ${sale.id}</p>
+                            <p><b>Prenda:</b> ${sale.productName}</p>
+                            <p><b>Fecha:</b> ${saleDate.toLocaleDateString()}</p>
+                            <p><b>Días transcurridos:</b> ${diffDays} días</p>
+                            <p class="mt-2 font-bold ${valid ? 'text-emerald-600' : 'text-red-600'}">
+                                ${valid ? '✅ GARANTÍA VIGENTE (Menos de 30 días)' : '❌ GARANTÍA VENCIDA (Más de 30 días)'}
+                            </p>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `<p class="text-red-600 font-bold">Ticket no encontrado en el sistema.</p>`;
+                    }
+                    document.getElementById('warranty-modal').classList.remove('hidden');
+                    closeScanner();
+                }
+            });
+        }
+
+        function showTicket(product) {
+            let saleId = "TKT-" + Math.floor(100000 + Math.random() * 900000);
+            let dateStr = new Date().toLocaleString();
+            
+            document.getElementById('ticket-details').innerHTML = `
+                <p><b>Ticket:</b> ${saleId}</p>
+                <p><b>Fecha:</b> ${dateStr}</p>
+                <p><b>Artículo:</b> ${product.name}</p>
+                <p><b>Categoría:</b> ${product.category} (${product.gender})</p>
+                <p><b>Talla:</b> ${product.size}</p>
+                <p class="text-right font-bold text-sm mt-1">TOTAL: $${product.price}</p>
+            `;
+
+            document.getElementById('ticket-modal').classList.remove('hidden');
+            JsBarcode("#barcode-ticket", saleId, { format: "CODE128", width: 1.5, height: 40, displayValue: true });
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticket-modal').classList.add('hidden');
+        }
+
+        async function saveProduct() {
+            let name = document.getElementById('p-name').value;
+            let gender = document.getElementById('p-gender').value;
+            let category = document.getElementById('p-category').value;
+            let size = document.getElementById('p-size').value;
+            let price = parseFloat(document.getElementById('p-price').value);
+            let stock = parseInt(document.getElementById('p-stock').value);
+
+            if (!name || !size || isNaN(price)) {
+                alert("Completa todos los campos obligatorios.");
+                return;
+            }
+
+            let res = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'addProduct', code: window.tempBarcode, name, gender, category, size, price, stock })
+            });
+            let data = await res.json();
+            if (data.status === 'success') {
+                alert("¡Guardado correctamente!");
+                closeScanner();
+                loadData();
+            } else alert("Error al guardar.");
+        }
+
+        async function deleteSale(saleId) {
+            if (currentUser.role !== 'admin') {
+                alert("Acceso denegado. Solo el Administrador puede cancelar ventas.");
+                return;
+            }
+            if (confirm("¿Cancelar y borrar esta venta?")) {
+                let res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'deleteSale', saleId: saleId })
+                });
+                let data = await res.json();
+                if (data.status === 'success') {
+                    alert("Venta eliminada.");
+                    loadData();
+                } else alert("Error al eliminar.");
+            }
+        }
+
+        function updateInventoryUI() {
+            let container = document.getElementById('view-inv');
+            if (inventory.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-center py-4">No hay productos.</p>`;
+                return;
+            }
+            container.innerHTML = inventory.map(item => `
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-700">${item.name}</span>
+                        <div class="text-gray-400 text-[10px]">${item.gender} | ${item.category} | Talla: ${item.size}</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-emerald-600">$${item.price}</span>
+                        <div class="text-gray-400 text-[10px]">Stock: ${item.stock}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSalesUI() {
+            let container = document.getElementById('view-sales');
+            if (sales.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-center py-4">No hay ventas.</p>`;
+                return;
+            }
+            container.innerHTML = sales.map(s => `
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-700">${s.productName}</span>
+                        <div class="text-gray-400 text-[10px]">Talla: ${s.size} | $${s.price}</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] text-gray-500">${s.id}</span>
+                        ${currentUser.role === 'admin' ? `
+                            <button onclick="deleteSale('${s.id}')" class="bg-red-100 text-red-600 hover:bg-red-200 px-2 py-1 rounded text-[10px] font-bold">Cancelar</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
