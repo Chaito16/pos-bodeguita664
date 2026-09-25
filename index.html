@@ -6,7 +6,7 @@
     <title>POS La Bodeguita 664 - Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Librería Escáner de Código de Barras -->
+    <!-- Librería Escáner de Código de Barras (Cámara) -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <!-- Librería Generador de Código de Barras para Ticket -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -35,23 +35,23 @@
         <main class="space-y-3 flex-1">
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="openScanner('add')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
-                    📷 Escanear Alta
+                    📷 Escanear (Cámara)
                 </button>
                 <button onclick="openManualAddModal()" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
-                    ⌨️ Alta Manual
+                    ⌨️ Alta Manual / Pistola
                 </button>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="openScanner('pos')" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
-                    🛒 Vender Escáner
+                    🛒 Vender (Cámara)
                 </button>
                 <button onclick="openManualSellModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-semibold shadow flex flex-col items-center justify-center text-xs">
-                    🛍️ Venta Manual
+                    🛍️ Venta Rápida (Pistola)
                 </button>
             </div>
 
-            <!-- Botones de Utilidades y Admin -->
+            <!-- Botón de Garantías -->
             <button onclick="openScanner('warranty')" class="w-full bg-amber-600 hover:bg-amber-700 text-white p-2.5 rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2">
                 🔍 Revisar Garantía (Escanear Ticket)
             </button>
@@ -84,7 +84,7 @@
             <button onclick="loadData()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-xl text-xs font-bold">🔄 Sincronizar Datos</button>
         </main>
 
-        <!-- Modal Login Admin / Alta de Usuarios -->
+        <!-- Modal Login Admin -->
         <div id="login-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white p-5 rounded-3xl max-w-xs w-full space-y-3">
                 <h3 class="font-bold text-sm text-slate-800 text-center">Acceso Administrador</h3>
@@ -95,7 +95,7 @@
             </div>
         </div>
 
-        <!-- Modal Gestión de Usuarios (Admin) -->
+        <!-- Modal Gestión de Usuarios -->
         <div id="user-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white p-5 rounded-3xl max-w-xs w-full space-y-3">
                 <h3 class="font-bold text-sm text-slate-800 text-center">Dar de Alta Nuevo Cajero</h3>
@@ -107,12 +107,12 @@
             </div>
         </div>
 
-        <!-- Modal Alta Manual de Producto -->
+        <!-- Modal Alta Manual Detallada -->
         <div id="manual-add-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white p-5 rounded-3xl max-w-xs w-full space-y-3 max-h-[90vh] overflow-y-auto">
-                <h3 class="font-bold text-sm text-slate-800 text-center">Registro Manual de Prenda</h3>
-                <input type="text" id="m-code" placeholder="Código de barras (ej. 7501234)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
-                <input type="text" id="m-name" placeholder="Descripción (ej. Vestido floral)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                <h3 class="font-bold text-sm text-slate-800 text-center">Alta de Prenda Detallada</h3>
+                <input type="text" id="m-code" placeholder="Código de barras o pistola" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                <input type="text" id="m-name" placeholder="Descripción (ej. Pantalón de mezclilla)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
                 
                 <div class="grid grid-cols-2 gap-2">
                     <select id="m-gender" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
@@ -122,6 +122,7 @@
                         <option value="Infantil">Infantil</option>
                     </select>
                     <select id="m-category" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                        <option value="Pantalon">Pantalón</option>
                         <option value="Blusa">Blusa</option>
                         <option value="Playera">Playera</option>
                         <option value="Short">Short</option>
@@ -135,7 +136,7 @@
                 </div>
 
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="m-size" placeholder="Talla" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                    <input type="text" id="m-size" placeholder="Talla (S,M,32)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
                     <input type="number" id="m-price" placeholder="Precio ($)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
                     <input type="number" id="m-stock" placeholder="Stock" value="1" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
                 </div>
@@ -145,21 +146,21 @@
             </div>
         </div>
 
-        <!-- Modal Venta Manual -->
+        <!-- Modal Venta Rápida con Pistola / Teclado -->
         <div id="manual-sell-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white p-5 rounded-3xl max-w-xs w-full space-y-3">
-                <h3 class="font-bold text-sm text-slate-800 text-center">Venta Rápida por Código</h3>
-                <input type="text" id="sell-code-input" placeholder="Ingresa código o escanea" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
-                <button onclick="processManualSale()" class="w-full bg-blue-600 text-white p-3 rounded-xl font-bold text-xs shadow">Procesar Venta</button>
+                <h3 class="font-bold text-sm text-slate-800 text-center">Venta con Pistola o Código</h3>
+                <input type="text" id="sell-code-input" placeholder="Pasa la pistola o escribe el código" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50" onkeydown="if(event.key === 'Enter') processManualSale()">
+                <button onclick="processManualSale()" class="w-full bg-blue-600 text-white p-3 rounded-xl font-bold text-xs shadow">Procesar Venta y Generar Ticket</button>
                 <button onclick="document.getElementById('manual-sell-modal').classList.add('hidden')" class="w-full bg-gray-100 text-gray-700 p-2 rounded-xl text-xs font-bold">Cancelar</button>
             </div>
         </div>
 
-        <!-- Modal de Escáner -->
+        <!-- Modal de Escáner Cámara -->
         <div id="scanner-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex flex-col justify-end">
             <div class="bg-white rounded-t-3xl p-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 id="scanner-title" class="font-bold text-slate-800 text-sm">Escanear Código</h3>
+                    <h3 id="scanner-title" class="font-bold text-slate-800 text-sm">Escanear con Cámara</h3>
                     <button onclick="closeScanner()" class="text-gray-500 font-bold px-3 py-1 bg-gray-100 rounded-full text-xs">✕</button>
                 </div>
                 <div id="reader" class="w-full rounded-xl overflow-hidden mb-4"></div>
@@ -168,7 +169,7 @@
                     <div class="bg-amber-50 p-2.5 rounded-xl text-xs text-amber-800 font-medium border border-amber-200">
                         Código detectado: <span id="scanned-code" class="font-bold"></span>
                     </div>
-                    <input type="text" id="p-name" placeholder="Descripción (ej. Blusa casual)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                    <input type="text" id="p-name" placeholder="Descripción (ej. Pantalón de mezclilla)" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
                     
                     <div class="grid grid-cols-2 gap-2">
                         <select id="p-gender" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
@@ -178,6 +179,7 @@
                             <option value="Infantil">Infantil</option>
                         </select>
                         <select id="p-category" class="w-full p-2.5 border rounded-xl text-xs bg-slate-50">
+                            <option value="Pantalon">Pantalón</option>
                             <option value="Blusa">Blusa</option>
                             <option value="Playera">Playera</option>
                             <option value="Short">Short</option>
@@ -242,7 +244,7 @@
         </div>
 
         <footer class="text-center text-[10px] text-slate-400 mt-4">
-            La Bodeguita 664 - POS v3.0
+            La Bodeguita 664 - POS v3.2
         </footer>
     </div>
 
@@ -282,7 +284,7 @@
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('admin-pass-input').value = '';
-                alert("¡Modo Administrador activado con éxito!");
+                alert("¡Modo Administrador activado!");
                 updateSalesUI();
             } else {
                 alert("Contraseña incorrecta. La clave por defecto es admin123");
@@ -334,7 +336,7 @@
             });
             let data = await res.json();
             if (data.status === 'success') {
-                alert("¡Prenda registrada manualmente en Google Sheets!");
+                alert("¡Prenda registrada correctamente en Google Sheets!");
                 document.getElementById('manual-add-modal').classList.add('hidden');
                 loadData();
             } else alert("Error al guardar.");
@@ -342,10 +344,11 @@
 
         function openManualSellModal() {
             document.getElementById('manual-sell-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('sell-code-input').focus(), 100);
         }
 
         async function processManualSale() {
-            let code = document.getElementById('sell-code-input').value;
+            let code = document.getElementById('sell-code-input').value.trim();
             let product = inventory.find(p => p.code == code);
             if (product) {
                 if (product.stock > 0) {
@@ -355,7 +358,6 @@
                     });
                     let data = await res.json();
                     if (data.status === 'success') {
-                        alert(`¡Venta procesada con éxito!`);
                         document.getElementById('manual-sell-modal').classList.add('hidden');
                         document.getElementById('sell-code-input').value = '';
                         loadData();
@@ -374,7 +376,7 @@
                 <p><b>Fecha de Corte:</b> ${new Date().toLocaleDateString()}</p>
                 <p><b>Total de Tickets Emitidos:</b> ${totalItems}</p>
                 <p class="text-emerald-600 font-bold text-sm">Venta Total en Caja: $${totalSales.toFixed(2)}</p>
-                <p class="text-[10px] text-gray-500">Corte calculado en base a registros de Google Sheets.</p>
+                <p class="text-[10px] text-gray-500">Corte calculado en base a Google Sheets.</p>
             `;
             document.getElementById('cashcut-modal').classList.remove('hidden');
         }
@@ -397,7 +399,7 @@
             currentMode = mode;
             document.getElementById('scanner-modal').classList.remove('hidden');
             document.getElementById('product-form').classList.add('hidden');
-            document.getElementById('scanner-title').innerText = mode === 'add' ? 'Escanear para Registrar' : mode === 'pos' ? 'Escanear para Vender' : 'Escanear Ticket de Garantía';
+            document.getElementById('scanner-title').innerText = mode === 'add' ? 'Escanear con Cámara' : mode === 'pos' ? 'Venta por Cámara' : 'Revisar Garantía';
 
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
@@ -467,7 +469,7 @@
                 <p><b>Ticket:</b> ${saleId}</p>
                 <p><b>Fecha:</b> ${new Date().toLocaleString()}</p>
                 <p><b>Artículo:</b> ${product.name}</p>
-                <p><b>Talla:</b> ${product.size} | Cat: ${product.category}</p>
+                <p><b>Talla:</b> ${product.size} | Cat: ${product.category} (${product.gender})</p>
                 <p class="text-right font-bold text-sm mt-1">TOTAL: $${product.price}</p>
             `;
             document.getElementById('ticket-modal').classList.remove('hidden');
