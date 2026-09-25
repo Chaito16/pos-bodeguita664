@@ -15,11 +15,18 @@
 
     <div class="max-w-md mx-auto p-4 min-h-screen flex flex-col justify-between">
         
-        <!-- Encabezado con Logo Oficial -->
+        <!-- Encabezado con Logotipo Oficial Embebido -->
         <header class="bg-slate-900 text-white p-4 rounded-2xl shadow-lg mb-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="https://i.imgur.com/7Xq592b.png" alt="La Bodeguita 664" class="w-11 h-11 rounded-full object-cover border-2 border-amber-500 bg-white" onerror="this.src='https://placehold.co/100x100?text=664'">
+                    <div class="w-11 h-11 rounded-full border-2 border-amber-500 bg-white flex items-center justify-center overflow-hidden shadow">
+                        <svg viewBox="0 0 100 100" class="w-full h-full object-cover">
+                            <circle cx="50" cy="50" r="48" fill="#1e293b"/>
+                            <path d="M20,50 Q50,20 80,50" fill="none" stroke="#f59e0b" stroke-width="6"/>
+                            <text x="50" y="58" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">664</text>
+                            <text x="50" y="80" font-size="10" font-weight="bold" fill="#f59e0b" text-anchor="middle">BODEGUITA</text>
+                        </svg>
+                    </div>
                     <div>
                         <h1 class="text-xs font-bold tracking-wider">LA BODEGUITA 664</h1>
                         <p class="text-[10px] text-amber-400 font-medium" id="user-role-label">Cajero: General</p>
@@ -203,23 +210,30 @@
             </div>
         </div>
 
-        <!-- Modal de Ticket para Impresión -->
+        <!-- Modal de Ticket para Impresión con Mensaje Personalizado -->
         <div id="ticket-modal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
             <div class="bg-white p-6 rounded-3xl max-w-xs w-full text-center space-y-3 font-mono text-xs">
                 <div class="flex justify-center mb-1">
-                    <img src="https://i.imgur.com/7Xq592b.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border border-slate-800 bg-white" onerror="this.style.display='none'">
+                    <div class="w-14 h-14 rounded-full border border-slate-800 bg-white flex items-center justify-center overflow-hidden">
+                        <svg viewBox="0 0 100 100" class="w-full h-full object-cover">
+                            <circle cx="50" cy="50" r="48" fill="#1e293b"/>
+                            <path d="M20,50 Q50,20 80,50" fill="none" stroke="#f59e0b" stroke-width="6"/>
+                            <text x="50" y="58" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">664</text>
+                            <text x="50" y="80" font-size="10" font-weight="bold" fill="#f59e0b" text-anchor="middle">BODEGUITA</text>
+                        </svg>
+                    </div>
                 </div>
                 <h2 class="font-bold text-sm tracking-wider">LA BODEGUITA 664</h2>
                 <p class="text-[10px] text-gray-500">Moda Americana * Calidad * Estilo</p>
                 <hr class="border-dashed my-2">
                 <div id="ticket-details" class="text-left space-y-1 text-[11px]"></div>
                 <hr class="border-dashed my-2">
-                <p class="text-[9px] text-gray-600">Conserve este ticket para cambios o garantía en 30 días.</p>
+                <p class="text-[9px] text-gray-600 font-semibold">¡Gracias por su compra!<br>Que su dinero se le multiplique</p>
                 <div class="my-3 flex flex-col items-center">
                     <svg id="barcode-ticket"></svg>
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs">🖨️ Imprimir</button>
+                    <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs">🖨️ Imprimir Ticket</button>
                     <button onclick="closeTicketModal()" class="flex-1 bg-gray-200 text-gray-800 py-2.5 rounded-xl font-bold text-xs">Cerrar</button>
                 </div>
             </div>
@@ -239,12 +253,12 @@
             <div class="bg-white p-5 rounded-3xl max-w-xs w-full text-center space-y-3">
                 <h3 class="font-bold text-sm text-slate-800">Estado de Garantía</h3>
                 <div id="warranty-result" class="text-xs text-left bg-slate-50 p-3 rounded-xl border"></div>
-                <button onclick="document.getElementById('warranty-modal').classList.add('hidden')" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs font-bold">Cerrar</button>
+                <button onclick="document.getElementById('warranty-modal').classList.add('hidden')" class="w-full bg-slate-800 text-white py-2.5 rounded-xl font-bold">Cerrar</button>
             </div>
         </div>
 
         <footer class="text-center text-[10px] text-slate-400 mt-4">
-            La Bodeguita 664 - POS v3.2
+            La Bodeguita 664 - POS v3.4
         </footer>
     </div>
 
@@ -466,10 +480,11 @@
         function showTicket(product) {
             let saleId = "TKT-" + Math.floor(100000 + Math.random() * 900000);
             document.getElementById('ticket-details').innerHTML = `
-                <p><b>Ticket:</b> ${saleId}</p>
+                <p><b>Ticket ID:</b> ${saleId}</p>
                 <p><b>Fecha:</b> ${new Date().toLocaleString()}</p>
                 <p><b>Artículo:</b> ${product.name}</p>
-                <p><b>Talla:</b> ${product.size} | Cat: ${product.category} (${product.gender})</p>
+                <p><b>Categoría:</b> ${product.category} (${product.gender})</p>
+                <p><b>Talla:</b> ${product.size}</p>
                 <p class="text-right font-bold text-sm mt-1">TOTAL: $${product.price}</p>
             `;
             document.getElementById('ticket-modal').classList.remove('hidden');
